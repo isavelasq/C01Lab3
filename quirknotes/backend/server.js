@@ -4,7 +4,7 @@ import cors from "cors";
 
 const app = express();
 const PORT = 4000;
-const mongoURL = "mongodb://localhost:27017";
+const mongoURL = "mongodb://127.0.0.1:27017";
 const dbName = "quirknotes";
 
 // Connect to MongoDB
@@ -104,6 +104,17 @@ app.delete("/deleteNote/:noteId", express.json(), async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 })
+
+
+app.delete("/deleteAllNotes", express.json(), async (req, res) => {
+  try {
+    const collection = db.collection(COLLECTIONS.notes);
+    await collection.deleteMany({});
+    res.status(200).json({response: "All notes succesfully deleted."});
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+})
   
 // Patch a note
 app.patch("/patchNote/:noteId", express.json(), async (req, res) => {
@@ -126,7 +137,7 @@ app.patch("/patchNote/:noteId", express.json(), async (req, res) => {
     // Find note with given ID
     const collection = db.collection(COLLECTIONS.notes);
     const data = await collection.updateOne({
-      username: decoded.username,
+      //username: decoded.username,
       _id: new ObjectId(noteId),
     }, {
       $set: {

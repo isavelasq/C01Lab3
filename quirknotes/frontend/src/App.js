@@ -38,13 +38,53 @@ function App() {
     getNotes()
   }, [])
 
-  const deleteNote = (entry) => {
-    // Code for DELETE here
-  }
+  const deleteNote = async (entry) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(`http://localhost:4000/deleteNote/${entry._id}`, {
+        method: "DELETE",
+      })
+      .then(async (response) => {
+        if (!response.ok) {
+          console.log("Server failed:", response.status)
+        } else {
+          deleteNoteState(entry);
+        }
+     })
+      
+    } catch (error) {
+      console.error("Fetch function failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };  
 
   const deleteAllNotes = () => {
-    // Code for DELETE all notes here
+    setLoading(true);
+
+  try {
+    fetch("http://localhost:4000/deleteAllNotes", {
+      method: "DELETE",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          console.log("Server failed:", response.status);
+        } else {
+          deleteAllNotesState();
+        }
+      })
+      .catch((error) => {
+        console.log("Fetch function failed:", error);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  } catch (error) {
+    console.log("Unexpected error:", error);
+    setLoading(false);
   }
+};
 
   
   // -- Dialog functions --
@@ -72,16 +112,21 @@ function App() {
     setNotes((prevNotes) => [...prevNotes, {_id, title, content}])
   }
 
-  const deleteNoteState = () => {
-    // Code for modifying state after DELETE here
+  const deleteNoteState = (selected_note) => {
+    setNotes((notes) => notes = notes.filter((note) => note._id != selected_note._id));
   }
 
   const deleteAllNotesState = () => {
-    // Code for modifying state after DELETE all here
+    setNotes(() => []);
   }
 
   const patchNoteState = (_id, title, content) => {
-    // Code for modifying state after PATCH here
+    setNotes((notes) => {
+      let note = notes.find(((note) => note._id == _id));
+      note.content = content;
+      note.title = title;
+      return notes;
+    })
   }
 
   return (
@@ -130,7 +175,7 @@ function App() {
           initialNote={dialogNote}
           closeDialog={closeDialog}
           postNote={postNoteState}
-          // patchNote={patchNoteState}
+          patchNote={patchNoteState}
           />
 
       </header>
